@@ -1,0 +1,57 @@
+<div class="__form-container __form-center">
+    <form id="registerForm" class="form-horizontal" method="post" action="/signup">
+<!-- username -->
+      <div id=""  class="form-group">
+          <label id="lb-username" class="" for="tb-username">Username</label>
+          {% if (usernameError == False) : %}
+              <div class="__error pull-right">Invalid username</div>
+          {% endif %}
+          {% if (usernameExists) : %}
+              <div class="__error pull-right">{{usernameExists}}</div>
+          {% endif %}
+          <input id="tb-username" name="username" class="form-control" type="text" placeholder="Enter Username" value="{{username}}">
+      </div>
+<!-- Password col-xs-8 col-sm-6 col-md-5 col-lg-4-->
+      <div id=""  class="form-group">
+          <label id=""  for="password">Password</label>
+          {% if (passwordBlank == False) : %}
+              <div class="__error pull-right">Password cannot be blank</div>
+          {% endif %}
+          <input id="password" name="password" type="password" class="form-control" placeholder="Enter Password" value="">
+      </div>
+<!-- Reenter Password -->
+      <div  id="" class="form-group">
+          <label id="reenter_password"  for="reenter_password" data-match="#password" data-match-error="Passwords do not match!">Re-enter Password</label>
+          {% if (passwordError == False) : %}
+              <div class="__error pull-right">Passwords do not match</div>
+          {% endif %}
+          <input id="reenter_password" name="reenter_password" type="password" class="form-control"  placeholder="Re-enter Password" value="">
+      </div>
+<!-- Email Address (optional) -->
+      <div id=""  class="form-group">
+          <label id="lb-email" for="tb-email">Email address</label>
+          {% if (emailError == False) : %}
+              <div class="__error pull-right">Invalid Email Address</div>
+          {% endif %}
+          <input id="tb-email" name="email" class="form-control" type="email" placeholder="Enter Email Address" value={{ email }}>
+      </div>
+      <div id="form-buttons" class="form-group">
+           <button id="signupButton" type="submit" class="btn btn-primary pull-right">Submit</button>
+      <div>
+  </form>
+</div>
+
+<!-- Redirect to Login form if the user already has an account -->
+
+<form action="/login" class="__alternate-flow">
+  <hr class="__underline">
+  <div  id="" class="row">
+    <div  id="" class="col-xs-12 text-center">
+      <h4> Already Have an Account?<br><br>
+        <button  id="loginButton" class="btn btn-warning pull-center" type="submit">Login Now</button>
+      </h4>
+    </div>
+  </div>
+</form>
+
+

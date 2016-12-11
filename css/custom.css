@@ -1,0 +1,56 @@
+body, html{
+     height: 100%;
+    background-repeat: no-repeat;
+    background-color: #d3d3d3;
+    font-family: 'Oxygen', sans-serif;
+}
+
+input,
+input::-webkit-input-placeholder {
+    font-size: 12px;
+
+}
+
+.checkbox, .radio {
+    padding-left: 20px;
+}
+
+.__error {
+    color: red;
+}
+
+.__underline {
+    border-bottom: 1px solid black
+}
+
+.__HeadingMargins {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.navbar-nav > li > a > input {
+    margin-top: -10px !important;
+    margin-bottom: -10px !important;
+}
+
+.__form-container {
+    padding-right: 15px;
+    padding-left: 15px;
+
+    background-color: #fff;
+    -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+.__form-center {
+    margin-top: 30px;
+    margin: 0 auto;
+    max-width: 330px;
+    padding: 40px 40px;
+}
+
+.__alternate-flow {
+    padding-top: 30px;
+
+}

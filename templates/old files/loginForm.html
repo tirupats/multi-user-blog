@@ -1,0 +1,51 @@
+<div class="__form-container __form-center">
+    <form id="loginForm" class="form-horizontal" method="post" action="/login">
+        {% if (generalError == True) : %}
+            <div class="alert alert-danger alert-dismissible fade in">
+                  {{ generalErrorMsg }}
+            </div>
+        {% endif %}
+<!-- username -->
+      <div id=""  class="form-group">
+          <label id="lb-username" class="" for="tb-username">Username</label>
+          <input id="tb-username" name="username" class="form-control" type="text" placeholder="Enter Username" value="{{ username }}">
+          <label id="username-error" class="has-error col-xs-4">
+                    {% if (usernameError == False) : %}
+                        That's not a valid username.
+                    {% endif %}
+          </label>
+      </div>
+<!-- Password col-xs-8 col-sm-6 col-md-5 col-lg-4-->
+      <div id=""  class="form-group">
+          <label id=""  for="password">Password</label>
+          <input id="password"  type="password" class="form-control" placeholder="Enter Password" value="">
+          {% if (passwordBlank == False) : %}
+                        That's not a valid username.
+          {% endif %}
+      </div>
+
+<!-- Remember Me -->
+      <div id="form-buttons" class="form-group">
+          <label class="checkbox pull-left ">
+              <input id="cb-remember-me" class="" type="checkbox"> Remember Me
+          </label>
+          <button id="loginButton" type="submit" class="btn btn-primary pull-right">login</button>
+      <div>
+  </form>
+</div>
+
+<!-- Redirect to Login form if the user already has an account -->
+
+<form action="/signup" class="__alternate-flow">
+  <hr class="__underline">
+  <div  id="" class="row">
+    <div  id="" class="col-xs-12 text-center">
+      <h4> Don't Have an Account?<br><br>
+        <button  id="loginButton" class="btn btn-warning pull-center" type="submit">Sign up Now</button>
+      </h4>
+    </div>
+  </div>
+</form>
+
+
+

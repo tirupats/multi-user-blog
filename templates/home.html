@@ -1,0 +1,32 @@
+{% extends "BASE_TEMPLATE.html" %}
+
+{% block content %}
+
+    {% if blogs and blogs.count()>=1: %}
+        {% for blog in blogs: %}
+        <div class="row __underline">
+            <div class="col-xs-8 text-left">
+                <h3>{{blog.title}}  </h3>
+            </div>
+            <div class="col-xs-4 text-right __HeadingMargins">
+                Created: {{(blog.created).strftime("%A, %d-%b-%Y")}}
+            </div>
+        </div>
+        <article>
+            <div class="col-xs-12">{{ blog.blogText | safe }}</div>
+
+        </article>
+        {% endfor %}
+    {% else: %}
+        <div class="row">
+            <div class="col-xs-12 text-center">
+                <h3>No blogs yet!  Why not write a new blog here:
+                <a href="/newpost">
+                <input type="submit" value="New Blog" class="btn btn-primary">
+                </a>
+                </h3>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

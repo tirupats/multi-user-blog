@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "header.html" %}
+    {% include "footer.html" %}
+</head>
+<body>
+    <div class="container">
+        {% if (loggedIn == True) %}
+            {% include "navbar-loggedin.html" %}
+        {% else %}
+            {% include "navbar-loggedin.html" %}
+        {% endif %}
+        {% include "blogs.html" %}
+    </div>
+    {% include "footer.html" %}
+</body>
+</html>
