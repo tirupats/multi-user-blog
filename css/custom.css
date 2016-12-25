@@ -54,3 +54,41 @@ input::-webkit-input-placeholder {
     padding-top: 30px;
 
 }
+
+.__blog-header {
+
+    /* border-bottom: 1px solid #000 !important;*/
+}
+
+/***************************************************/
+.__date-md {
+    display: block;
+    padding-right: 0;
+    text-align: center;
+    display: none;
+  }
+
+.date-wrapper {
+  color: #1b1b1b;
+  text-align: center;
+  margin: 0 0 1em 0;
+  padding: 0;
+  -webkit-border-radius: 2px 2px 2px 2px;
+  -moz-border-radius: 2px 2px 2px 2px;
+  border-radius: 2px 2px 2px 2px;
+  min-width: 50px;
+  font-weight: 400 !important;
+  background: #F5F5F5;
+}
+
+.btn-secondary {
+  color: #373a3c;
+  background-color: #fff;
+  border-color: #eea236;
+}
+
+.btn-secondary:hover {
+  color: #373a3c;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}

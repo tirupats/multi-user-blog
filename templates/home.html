@@ -4,12 +4,17 @@
 
     {% if blogs and blogs.count()>=1: %}
         {% for blog in blogs: %}
-        <div class="row __underline">
-            <div class="col-xs-8 text-left">
-                <h3>{{blog.title}}  </h3>
-            </div>
-            <div class="col-xs-4 text-right __HeadingMargins">
-                Created: {{(blog.created).strftime("%A, %d-%b-%Y")}}
+        <div class="row">
+            <div class="col-xs-12 __blog-header">
+                <div class="__underline">    
+                    <div class="col-xs-8 text-left">
+                        <h3 class=""> {{ blog.title }}  </h3>   
+                    </div>
+                    
+                    <div class="col-xs-4 text-right __HeadingMargins">
+                        Created: {{(blog.created).strftime("%A, %d-%b-%Y")}}
+                    </div>
+                </div>
             </div>
         </div>
         <article>
@@ -28,5 +33,6 @@
             </div>
         </div>
     {% endif %}
-
 {% endblock %}
+
+

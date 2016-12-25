@@ -3,28 +3,29 @@ import webapp2
 import jinja2
 from google.appengine.ext import db
 import collections
-import re
-import random
-from string import letters
 import hashlib
 import hmac
-from functools import wraps
+from datetime import date
+#from functools import wraps
+
+from models.VARS import *
+from models.errorHandlers import *
+
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 
-secret = "123456asdfgh"
+# Wrappers/ class decorators
+# def login_required(f):
+#     @wraps(f)
+#     def wrap(*args, **kwargs):
+#         if 'logged_in' in session:
+#             return f(*args, **kwargs)
+#         else:
+#             return redirect()
 
-_ERROR_MESSAGES = ""
-# Naming each HTML file so its easier to reference it later
-_HOME_ = "home.html"
-_NEWPOST_ = "newpost.html"
-_LOGIN_ = "login.html"
-_REGISTER_ = "register.html"
-_SINGLEPOST_ = "singlepost.html"
-_WELCOME_ = "welcome.html"
-_404ERROR_ = "404error.html"
 
+# global functions
 
 def render_str(template, **params):
         t = jinja_env.get_template(template)
@@ -38,6 +39,18 @@ def check_secure_val(secure_val):
     if secure_val == make_secure_val(val):
         return val
 
+def cookie_expires(d):
+    # All cookies expire 1 year from the day the "remember me" feature was used
+    remember_for = 1 # years
+    try:
+        return d.replace(year = d.year + remember_for)
+    else:
+        return d + date(d.year + years, 1, 1) - date(d.year, 1, 1)
+
+# Error Handlers
+
+
+# Blog handler
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
@@ -61,71 +74,16 @@ class Handler(webapp2.RequestHandler):
 
     def login(self, user):
         self.set_secure_cookie('user_id', str(user.key().id()))
-        self.loggedIn = True
 
     def logout(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
-        self.loggedIn = False
-
-    def check_logged_in(self, f):
-        @wraps(f)
-        def wrap(*args, **kwargs):
-            if self.user != None:
-                # user is logged in
-                return (_404ERROR_)
-        return wrap
 
     #Initialize gets called every time by default
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
+        self.response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, pre-check=0, post-check=0"
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.by_id(int(uid))
-
-def isValidUsername(username):
-        if len(username)<=2:
-            return False
-        else:
-            return True
-def usernameExists(username):
-    if username == User.by_name(username):
-        return True
-    else:
-        return False
-
-def isBlankPassword(password):
-    if password:
-        return True
-    else:
-        return False
-
-def isValidPassword(password, reenter_password):
-    if password and reenter_password and (password==reenter_password):
-        return True
-    else:
-        return False
-
-def isValidEmail(email):
-    if email=='' or re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return True
-    else:
-        return False
-
-def make_salt(length = 5):
-    return ''.join(random.choice(letters) for x in xrange(length))
-
-def make_pw_hash(name, pw, salt = None):
-    if not salt:
-        salt = make_salt();
-    h = hashlib.sha256(name + pw + salt).hexdigest();
-    return '%s %s' % (salt, h);
-
-def valid_pw(name, password, h):
-    salt = h.split(',')[0]
-    return h == make_pw_hash(name, password, salt)
-
-def users_key( group = 'default'):
-    return db.Key.from_path('users', group)
-
 
 ###### Blog related functions and classes
 
@@ -137,7 +95,7 @@ class User(db.Model):
 
     @classmethod
     def by_id(cls, uid):
-        return User.get_by_id(uid, parent = users_key())
+        return User.get_by_id(uid) #, parent = users_key())
 
     @classmethod
     def by_name(cls, name):
@@ -147,7 +105,7 @@ class User(db.Model):
     @classmethod
     def register(cls, name, pw, email = None):
         pw_hash = make_pw_hash(name, pw)
-        return User(parent = users_key(),
+        return User(#parent = users_key(),
             name = name,
             pw_hash = pw_hash,
             email = email)
@@ -167,34 +125,47 @@ class Blog(db.Model):
 
     def render(self):
         self._render_text = self.content.replace('<img', '<img class="img-responsive" ')
-        return render_str(_HOME_, p=self)
+        return render_str(HOME_PAGE, p=self)
 
 class NewPost(Handler):
     def get(self):
-        self.render(_NEWPOST_)
+        if self.user:
+            self.render(NEWPOST_PAGE, user=self.user)
+        else:
+            generalError = True
+            generalErrorMsg = "You must be logged in to post a blog!  Please login to continue."
+            self.render(LOGIN_PAGE, generalError = generalError, generalErrorMsg = generalErrorMsg )
 
     def post(self):
         title = self.request.get("title")
         blogText = self.request.get("blogText")
         error = ""
         errorType = ""
-        if (title and blogText):
-            a = Blog(title = title, blogText = blogText)
-            a.put()
-            errorType = 0
-            self.redirect("/blog/%s" % str(a.key().id()))
-            #self.render("home.html", title = title, blogText = blogText,error = error)
-        elif (title):
-            error = "Blog Text is a required field"
-            errorType = 1 # Missing Blog Text
-        elif (blogText):
-            error = "Title is a required field"
-            errorType = 2 # Missing Title
+        if self.user:   # if user is logged in
+            if (title and blogText):
+                a = Blog(title = title, blogText = blogText)
+                a.put()
+                errorType = 0
+                self.redirect("/blog/%s" % str(a.key().id()))
+                #self.render("home.html", title = title, blogText = blogText,error = error)
+            elif (title):
+                error = "Blog Text is a required field"
+                errorType = 1 # Missing Blog Text
+            elif (blogText):
+                error = "Title is a required field"
+                errorType = 2 # Missing Title
+            else:
+                error = "Both Title and Blog text are required fields"
+                errorType = 3 # Missing both title and blog text
         else:
-            error = "Both Title and Blog text are required fields"
-            errorType = 3 # Missing both title and blog text
+            # set cookie and store the blog title and blog text in the cookie. 
+            # redirect user to the login page
+
+            
+            None # how do you only force users to only post content when they are logged in?
+            # How to save user entry - allow them to enter text, then login, then retain the text entered and post it after logging in?
         if error:
-            self.render(_NEWPOST_, title = title, blogText = blogText,error = error, errorType = errorType)
+            self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType)
 
 class Permalink(Handler):
     def get(self, post_id):
@@ -204,49 +175,59 @@ class Permalink(Handler):
         if not currentBlog:
             self.error(404)
         else:
-            self.render(_SINGLEPOST_, blog = currentBlog)
+            self.render(SINGLEPOST_PAGE, blog = currentBlog)
 
 class Home(Handler):
     def get(self, post_id=''):
         blogs = db.GqlQuery("select * from Blog order by last_modified desc limit 10")
-        self.render(_HOME_, blogs = blogs)
+        self.render(HOME_PAGE, blogs = blogs, user=self.user)
 
 
 class Login(Handler):
-    @check_logged_in
     def get(self):
-        self.render(_LOGIN_)
+        if self.user:
+            self.redirect(ERROR_PAGE)
+        else:
+            self.render(LOGIN_PAGE)
 
     def post(self):
         username = self.request.get("username")
         password = self.request.get("password")
+        remember_me = self.request.get("remember-me")
         generalError = False
         generalErrorMsg = ""
-        u = User.login(username, password);
+        u = User.login(username, password)
         if u:
             # Display user dashboard
-            self.render(_HOME_)
+            self.login(u)
+            self.redirect('/welcome')
+            if remember_me == True:
+                #set cookie to expire 1 year from now. 
+                self.set_secure_cookie('expires', cookie_expires(date.today()))
         else:
-            self.render(_LOGIN_, username=username, generalError=True, generalErrorMsg="Invalid username or password.  Please try again" )
+            generalError = True
+            generalErrorMsg = "Invalid username or password.  Please try again"
+            self.render(LOGIN_PAGE, username = username, generalError = eneralError, generalErrorMsg = generalErrorMsg)
 
 class Register(Handler):
-    @check_logged_in
+    #@check_logged_in
     def get(self):
-        self.render("register.html")
+        if not self.user:
+            self.render("register.html")
 
     def post(self):
         username = self.request.get("username")
         password = self.request.get("password")
-        reenter_password = self.request.get("reenter_password")
+        verify = self.request.get("verify")
         email = self.request.get("email")
         self.username = username
         self.password = password
-        self.reenter_password = reenter_password
+        self.verify = verify
         self.email = email
         errorList = {}
-        errorList = {"username":isValidUsername(username),"password":isBlankPassword(password),"reenter_password": isValidPassword(password, reenter_password), "email":isValidEmail(email)}
+        errorList = {"username":isValidUsername(username),"password":isBlankPassword(password),"verify": isValidPassword(password, verify), "email":isValidEmail(email)}
         if False in errorList.values():
-            self.render(_REGISTER_, username=username, email=email, usernameError=errorList['username'], passwordBlank=errorList['password'], passwordError=errorList['reenter_password'], emailError=errorList['email'])
+            self.render(REGISTER_PAGE, username=username, email=email, usernameError=errorList['username'], passwordBlank=errorList['password'], passwordError=errorList['verify'], emailError=errorList['email'])
         else:
             self.done()
 
@@ -255,24 +236,32 @@ class Register(Handler):
             u = User.by_name(self.username)
             if u:
                 msg = "That user already exists"
-                self.render(_REGISTER_, username=self.username, usernameExists = msg)
+                self.render(REGISTER_PAGE, username=self.username, usernameExists = msg)
             else:
                 u = User.register(self.username, self.password, self.email)
                 u.put()
                 self.login(u)
-                self.redirect('/unit3/welcome')
+                self.redirect('/welcome')
 
 class Logout(Handler):
     def get(self):
-        self.logout();
-        self.redirect('/')
+        if self.user:
+            self.logout();
+            self.redirect('/signup')
+        else:
+            self.redirect('/error')
 
 class Welcome(Handler):
     def get(self, *args, **vargs):
         if self.user:
-            self.render(_WELCOME_, username = self.user.name)
+            self.render(WELCOME_PAGE, username = self.user.name, user=self.user)
         else:
-            self.redirect("blank.html")
+            self.redirect('/error')
+
+class Error404(Handler):
+    def get(self):
+        self.render(ERROR_PAGE, user=self.user)
+        
 
 app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/blog/?', Home),
@@ -280,6 +269,8 @@ app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/blog/([0-9]+)/?', Permalink),
                                 ('/signup/?', Register),
                                 ('/login/?', Login),
-                                ('/unit3/welcome/?', Welcome),
-                                ('/logout/?', Logout)],
+                                ('/welcome/?', Welcome),
+                                ('/logout/?', Logout),
+                                ('/error/?', Error404),
+                                ('/.*', Error404)],
                                 debug=True)

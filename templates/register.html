@@ -23,11 +23,11 @@
       </div>
 <!-- Reenter Password -->
       <div  id="" class="form-group">
-          <label id="reenter_password"  for="reenter_password" data-match="#password" data-match-error="Passwords do not match!">Re-enter Password</label>
+          <label id="verify"  for="verify" data-match="#password" data-match-error="Passwords do not match!">Re-enter Password</label>
           {% if (passwordError == False) : %}
               <div class="__error pull-right">Passwords do not match</div>
           {% endif %}
-          <input id="reenter_password" name="reenter_password" type="password" class="form-control"  placeholder="Re-enter Password" value="">
+          <input id="verify" name="verify" type="password" class="form-control"  placeholder="Re-enter Password" value="">
       </div>
 <!-- Email Address (optional) -->
       <div id=""  class="form-group">

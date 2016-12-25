@@ -18,7 +18,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.1/jquery.validate.min.js"></script>
     <script src="/js/custom_jquery.js"></script>
-    <script src="http://cdn.ckeditor.com/4.6.0/standard-all/ckeditor.js"></script>
+    <script src="//cdn.ckeditor.com/4.6.1/standard/ckeditor.js"></script>
 </head>
 <body>
     <div class="container">
@@ -33,18 +33,21 @@
                         <span class="icon-bar"></span>
                     </button>
                     <img class="navbar-brand" src="/img/logo.png" alt="World of blogs logo image">
-                    <a class="navbar-brand" href="#">World of Blogs</a>
+                    <a class="navbar-brand" href="/">World of Blogs</a>
                 </div>
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
-                <div class="collapse     navbar-collapse" id="bs-example-navbar-collapse-1">
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
+                        
                         <li><a href="/blog">All Blogs</a></li>
-                        <li><a href="/newpost">New Blog</a></li>
-                        {% if (user != None) %}
+                        {% if (user) %}
+                            <li><a href="/blog">My Blogs</a></li>
+                            <li><a href="/newpost"><input type="submit" value="Compose New Blog" class="btn btn-secondary"></a></li>
                             <li><a href="/logout"><input type="submit" value="Logout" class="btn btn-warning"></a></li>
                         {% else %}
-                            <li><a href="/login"><input type="submit" value="Login" class="btn btn-info"></a></li>
+                            <li><a href="/newpost"><input type="submit" value="Compose New Blog" class="btn btn-secondary"></a></li>
+                            <li><a href="/login"><input type="submit" value="Login" class="btn btn-warning"></a></li>
                             <li><a href="/signup"><input type="submit" value="Sign up" class="btn btn-warning"></a></li>
                         {% endif %}
 
