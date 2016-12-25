@@ -6,7 +6,18 @@
         {% for blog in blogs: %}
             <div class="clearfix">
                 <div class="col-xs-12 __blog-title text-left">
-                    <h3> {{ blog.title }}  </h3>   
+                    <h3> {{ blog.title }}  
+                        {% if user.name == blog.author: %}
+                            <button class="btn btn-danger pull-right">    
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                Delete Blog
+                            </button>
+                            <button class="btn btn-info pull-right">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> 
+                                Edit Blog
+                            </button>
+                        {% endif %}
+                    </h3>   
                 </div>
             </div>
             <div class="clearfix">
@@ -25,8 +36,8 @@
                         {{ blog.blogText[:250] | safe }}
                         {% if blog.blogText|length > 150: %}
                             <a href="/blog/{{ blog.key().id() }}/">
-                                <p class="pull-right"><btn class="btn btn-primary ">Read more... 
-                                </btn></p>    
+                                <p class="pull-right"><button class="btn btn-primary ">Read more... 
+                                </button></p>    
                             </a>
                         {% endif %}
                     </article>
