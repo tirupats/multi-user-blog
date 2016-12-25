@@ -44,7 +44,7 @@ def cookie_expires(d):
     remember_for = 1 # years
     try:
         return d.replace(year = d.year + remember_for)
-    else:
+    except ValueError:
         return d + date(d.year + years, 1, 1) - date(d.year, 1, 1)
 
 # Error Handlers
@@ -66,7 +66,7 @@ class Handler(webapp2.RequestHandler):
         cookie_val = make_secure_val(val)
         self.response.headers.add_header(
             'Set-Cookie',
-            '%s=%s; Path=/' % (name, cookie_val))
+            '%s=%s; Path=/;' % (name, cookie_val))
 
     def read_secure_cookie(self, name):
         cookie_val = self.request.cookies.get(name)
@@ -76,7 +76,11 @@ class Handler(webapp2.RequestHandler):
         self.set_secure_cookie('user_id', str(user.key().id()))
 
     def logout(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/; expires=;')
+    
+    def makeImagesResponsive(self, blogText):
+        # If the user posts images in the blog, make the images responsive.
+        return blogText.replace('<img ', '<img class="img img-responsive" ')
 
     #Initialize gets called every time by default
     def initialize(self, *a, **kw):
@@ -138,7 +142,7 @@ class NewPost(Handler):
 
     def post(self):
         title = self.request.get("title")
-        blogText = self.request.get("blogText")
+        blogText = self.makeImagesResponsive(self.request.get("blogText"))
         error = ""
         errorType = ""
         if self.user:   # if user is logged in
@@ -159,10 +163,8 @@ class NewPost(Handler):
                 errorType = 3 # Missing both title and blog text
         else:
             # set cookie and store the blog title and blog text in the cookie. 
-            # redirect user to the login page
-
-            
-            None # how do you only force users to only post content when they are logged in?
+            # redirect user to home page
+            seld.redirect(HOME_PAGE)
             # How to save user entry - allow them to enter text, then login, then retain the text entered and post it after logging in?
         if error:
             self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType)
@@ -175,7 +177,7 @@ class Permalink(Handler):
         if not currentBlog:
             self.error(404)
         else:
-            self.render(SINGLEPOST_PAGE, blog = currentBlog)
+            self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user)
 
 class Home(Handler):
     def get(self, post_id=''):
@@ -207,7 +209,7 @@ class Login(Handler):
         else:
             generalError = True
             generalErrorMsg = "Invalid username or password.  Please try again"
-            self.render(LOGIN_PAGE, username = username, generalError = eneralError, generalErrorMsg = generalErrorMsg)
+            self.render(LOGIN_PAGE, username = username, generalError = generalError, generalErrorMsg = generalErrorMsg)
 
 class Register(Handler):
     #@check_logged_in
@@ -247,7 +249,7 @@ class Logout(Handler):
     def get(self):
         if self.user:
             self.logout();
-            self.redirect('/signup')
+            self.redirect('/')
         else:
             self.redirect('/error')
 
