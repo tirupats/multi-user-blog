@@ -11,6 +11,10 @@ input::-webkit-input-placeholder {
 
 }
 
+h3 {
+    margin-top: 10px !important;
+}
+
 .checkbox, .radio {
     padding-left: 20px;
 }
@@ -52,13 +56,34 @@ input::-webkit-input-placeholder {
 
 .__alternate-flow {
     padding-top: 30px;
-
 }
 
-.__blog-header {
-
-    /* border-bottom: 1px solid #000 !important;*/
+.__blog-title {
+    color: #373a3c;
+    border-left: 1px solid #666; 
+    border-right: 1px solid #666; 
+    border-top: 1px solid #666;
 }
+
+.__blog-author {
+    margin-top: -10px;
+    border-left: 1px solid #666; 
+    border-right: 1px solid #666; 
+    color: cadetblue;
+}
+
+.__blog-date {
+    border-left: 1px solid #666; 
+    border-right: 1px solid #666;
+    padding-bottom: 10px;
+    color: cadetblue; 
+}
+
+.__blog-text {
+    border: 1px solid #666; 
+    padding-top: 10px;
+}
+
 
 /***************************************************/
 .__date-md {

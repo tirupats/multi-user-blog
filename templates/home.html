@@ -4,26 +4,37 @@
 
     {% if blogs and blogs.count()>=1: %}
         {% for blog in blogs: %}
-        <div class="row">
-            <div class="col-xs-12 __blog-header">
-                <div class="__underline">    
-                    <div class="col-xs-8 text-left">
-                        <h3 class=""> {{ blog.title }}  </h3>   
-                    </div>
-                    
-                    <div class="col-xs-4 text-right __HeadingMargins">
-                        Created: {{(blog.created).strftime("%A, %d-%b-%Y")}}
-                    </div>
+            <div class="clearfix">
+                <div class="col-xs-12 __blog-title text-left">
+                    <h3> {{ blog.title }}  </h3>   
                 </div>
             </div>
-        </div>
-        <article>
-            <div class="col-xs-12">{{ blog.blogText | safe }}</div>
-
-        </article>
+            <div class="clearfix">
+                <div class="col-xs-12 __blog-author text-left">
+                    <h4 > By: {{ blog.author }}  </h3>   
+                </div>
+            </div>                  
+            <div class="clearfix">
+                <div class="col-xs-12 __blog-date text-left">
+                    Created: {{(blog.created).strftime("%A, %d-%b-%Y")}}
+                </div>
+            </div> 
+            <div class="clearfix __blog-text">
+                <div class="col-xs-12">
+                    <article>
+                        {{ blog.blogText[:250] | safe }}
+                        {% if blog.blogText|length > 150: %}
+                            <a href="/blog/{{ blog.key().id() }}/">
+                                <p class="pull-right"><btn class="btn btn-primary ">Read more... 
+                                </btn></p>    
+                            </a>
+                        {% endif %}
+                    </article>
+                </div>
+            </div>
         {% endfor %}
     {% else: %}
-        <div class="row">
+        <div class="clearfix">
             <div class="col-xs-12 text-center">
                 <h3>No blogs yet!  Why not write a new blog here:
                 <a href="/newpost">

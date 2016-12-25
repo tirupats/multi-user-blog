@@ -124,6 +124,7 @@ class User(db.Model):
 class Blog(db.Model):
     title = db.StringProperty(required = True)
     blogText = db.TextProperty(required = True)
+    author = db.StringProperty(required = True) # foreign key from User table
     created = db.DateProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now = True)
 
@@ -142,12 +143,13 @@ class NewPost(Handler):
 
     def post(self):
         title = self.request.get("title")
-        blogText = self.makeImagesResponsive(self.request.get("blogText"))
+        blogText = (self.makeImagesResponsive(self.request.get("blogText"))).rstrip();
+        author = self.user.name
         error = ""
         errorType = ""
         if self.user:   # if user is logged in
             if (title and blogText):
-                a = Blog(title = title, blogText = blogText)
+                a = Blog(title = title, author = author, blogText = blogText)
                 a.put()
                 errorType = 0
                 self.redirect("/blog/%s" % str(a.key().id()))
