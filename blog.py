@@ -6,24 +6,12 @@ import collections
 import hashlib
 import hmac
 from datetime import date
-#from functools import wraps
 
 from models.VARS import *
 from models.errorHandlers import *
 
-
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
-
-# Wrappers/ class decorators
-# def login_required(f):
-#     @wraps(f)
-#     def wrap(*args, **kwargs):
-#         if 'logged_in' in session:
-#             return f(*args, **kwargs)
-#         else:
-#             return redirect()
-
 
 # global functions
 
@@ -40,15 +28,12 @@ def check_secure_val(secure_val):
         return val
 
 def cookie_expires(d):
-    # All cookies expire 1 year from the day the "remember me" feature was used
+# All cookies will be set to expire in 1 year or on logout if "remember me" feature is used
     remember_for = 1 # years
     try:
         return d.replace(year = d.year + remember_for)
     except ValueError:
         return d + date(d.year + years, 1, 1) - date(d.year, 1, 1)
-
-# Error Handlers
-
 
 # Blog handler
 class Handler(webapp2.RequestHandler):
@@ -89,8 +74,7 @@ class Handler(webapp2.RequestHandler):
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.by_id(int(uid))
 
-###### Blog related functions and classes
-
+# user database model
 
 class User(db.Model):
     name = db.StringProperty(required = True)
@@ -121,10 +105,11 @@ class User(db.Model):
             return u
 
 
+# blog database model
 class Blog(db.Model):
     title = db.StringProperty(required = True)
     blogText = db.TextProperty(required = True)
-    author = db.StringProperty(required = True) # foreign key from User table
+    author = db.StringProperty(required = True) # foreign key from User class
     created = db.DateProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now = True)
 
@@ -133,8 +118,10 @@ class Blog(db.Model):
         return render_str(HOME_PAGE, p=self)
 
 class NewPost(Handler):
+# This class defines logic associated with processing new blog posts.
     def get(self):
         if self.user:
+            # Keep track of prior page (or referer) to enable "cancel"" functionality
             if self.request.referrer == None:
                 referer = "/blog"
             else:
@@ -157,7 +144,6 @@ class NewPost(Handler):
                 a.put()
                 errorType = 0
                 self.redirect("/blog/%s" % str(a.key().id()))
-                #self.render("home.html", title = title, blogText = blogText,error = error)
             elif (title):
                 error = "Blog Text is a required field"
                 errorType = 1 # Missing Blog Text
@@ -168,10 +154,8 @@ class NewPost(Handler):
                 error = "Both Title and Blog text are required fields"
                 errorType = 3 # Missing both title and blog text
         else:
-            # set cookie and store the blog title and blog text in the cookie. 
             # redirect user to home page
             self.redirect(HOME_PAGE)
-            # How to save user entry - allow them to enter text, then login, then retain the text entered and post it after logging in?
         if error:
             self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType, referer = self.request.referer)
 
