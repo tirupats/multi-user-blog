@@ -1,8 +1,6 @@
-
-
 {% extends "BASE_TEMPLATE.html" %}
 {% block content %}
-        <form method="post" class="col-xs-12">
+        <form method="post" action="/edit/{{ blog.key().id() }}" class="col-xs-12">
             {% if error: %}
                 <div class="alert alert-danger">
                     {{ error }}
@@ -16,8 +14,9 @@
                 <label for="blog" class="control-label">Blog Text</label>
                 <textarea id="blogText" name="blogText" class="form-control"  cols="30" rows="10" >{{ blogText }}</textarea>
             </div>
-            <input type="submit" value="Save Blog" class="btn btn-primary pull-right">
+            <input type="submit" value="Update Blog" class="btn btn-primary pull-right">
             <a class="btn btn-warning pull-right" href={{ referer }}> Cancel </a>
+
         </form>
 
         <script>

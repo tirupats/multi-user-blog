@@ -1,23 +1,44 @@
 {% extends "BASE_TEMPLATE.html" %}
+
 {% block content %}
-        {% if not blog: %}
-            <div class="row">
-                <div class="col-xs-12 text-center">
-                    <h3>No blogs yet!  Why not write a new blog here:
-                    <a href="/newpost">
-                    <input type="submit" value="New Blog" class="btn btn-primary">
-                    </a>
-                    </h3>
+
+    {% if blog: %}
+            <div class="clearfix">
+                <div class="col-xs-12 __blog">
+                    <div class="col-xs-10 __blog-title pull-left" >
+                        <h3> {{ blog.title }}  </h3>
+                    </div> 
+                        {% if user.name == blog.author: %}
+                        <div class="col-xs-2 pull-right __edit-delete-buttons">
+                        <a class="btn btn-info" href="/edit/{{ blog.key().id() }}"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+                        <a class="btn btn-danger" href="/delete/{{ blog.key().id() }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
+                        </div>
+                        {% endif %}
+                      
                 </div>
             </div>
-        {% else: %}
-        <div class="row __underline">
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4"><h3>{{ blog.title }}</h3></div>
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4"><h3>{{ blog.author }}</h3></div>
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 __HeadingMargins">Created: {{blog.created}}</div>
+            <div class="clearfix">
+                <div class="col-xs-12 __blog-author text-left">
+                    <div class="pull-left"><h6> By: {{ blog.author }}  </h6></div>
+                    <div class="pull-right"><h6>Created: {{(blog.created).strftime("%A, %d-%b-%Y")}}<h6></div>   
+                </div>
+            </div>                  
+            <div class="clearfix __blog-text">
+                <div class="col-xs-12">
+                    <article>
+                        {{ blog.blogText | safe }}
+                    </article>
+                </div>
+            </div>
+    {% else: %}
+        <div class="clearfix">
+            <div class="col-xs-12 text-center">
+                <h3>No blogs yet!  Why not write a new blog here:
+                <a href="/newpost">
+                <input type="submit" value="New Blog" class="btn btn-primary">
+                </a>
+                </h3>
+            </div>
         </div>
-        <article>
-        <div class="col-xs-12"><p>{{blog.blogText | safe }}</p></div>
-        </article>
-        {% endif %}
+    {% endif %}
 {% endblock %}

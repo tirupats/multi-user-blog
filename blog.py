@@ -135,7 +135,11 @@ class Blog(db.Model):
 class NewPost(Handler):
     def get(self):
         if self.user:
-            self.render(NEWPOST_PAGE, user=self.user)
+            if self.request.referrer == None:
+                referer = "/blog"
+            else:
+                referer = self.request.referer
+            self.render(NEWPOST_PAGE, user=self.user, referer = referer)
         else:
             generalError = True
             generalErrorMsg = "You must be logged in to post a blog!  Please login to continue."
@@ -169,7 +173,7 @@ class NewPost(Handler):
             self.redirect(HOME_PAGE)
             # How to save user entry - allow them to enter text, then login, then retain the text entered and post it after logging in?
         if error:
-            self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType)
+            self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType, referer = self.request.referer)
 
 class Permalink(Handler):
     def get(self, post_id=''):
@@ -257,7 +261,7 @@ class Logout(Handler):
 class Welcome(Handler):
     def get(self, *args, **vargs):
         if self.user:
-            self.render(WELCOME_PAGE, username = self.user.name, user=self.user)
+            self.redirect('/blog')
         else:
             self.redirect('/error')
 
@@ -266,6 +270,17 @@ class Error404(Handler):
         self.render(ERROR_PAGE, user=self.user)
 
 class DeletePost(Handler):
+    def get(self, *args, **kwargs):
+        if self.user:
+            self.render(ERROR_PAGE)
+            self.write("Delete method cannot be accessed using an ID.  Please use GUI options to delete.")
+        else:
+            generalError = True
+            generalErrorMsg = "You must be logged in to delete a blog!  Please login to continue."
+            self.render(LOGIN_PAGE, generalError = generalError, generalErrorMsg = generalErrorMsg )
+
+
+
     def post(self, post_id=''):
         key = db.Key.from_path('Blog',int(post_id))
         if key != None:
@@ -274,13 +289,54 @@ class DeletePost(Handler):
         else:
             self.redirect(ERROR_PAGE)
 
-        
+class EditPost(Handler):
+    def get(self, post_id=''):
+        self.blog = Blog.get_by_id(int(post_id))
+        if self.request.referrer == None:
+            referer = "/blog"
+        else:
+            referer = self.request.referer
+        if self.user and self.user.name == self.blog.author:
+            self.render(EDITPOST_PAGE, user = self.user, referer = referer, title = self.blog.title, blogText = self.blog.blogText, blog = self.blog)
+        else:
+            generalError = True
+            generalErrorMsg = "You must be logged in to edit a blog!  Please login to continue."
+            self.render(LOGIN_PAGE, generalError = generalError, generalErrorMsg = generalErrorMsg )
+    
+    def post(self, post_id=''):        
+        updated_blog = Blog.get_by_id(int(post_id))
+        updated_blog.title = self.request.get("title")
+        updated_blog.blogText = (self.makeImagesResponsive(self.request.get("blogText"))).rstrip();
+        updated_blog.author = self.user.name
+        error = ""
+        errorType = ""
+        if self.user:   # if user is logged in
+            if (updated_blog.title and updated_blog.title):
+                updated_blog.put()
+                errorType = 0
+                self.redirect("/blog/%s" % str(post_id))
+            elif (updated_blog.title):
+                error = "Blog Text is a required field"
+                errorType = 1 # Missing Blog Text
+            elif (updated_blog.blogText):
+                error = "Title is a required field"
+                errorType = 2 # Missing Title
+            else:
+                error = "Both Title and Blog text are required fields"
+                errorType = 3 # Missing both title and blog text
+        else:
+            # redirect user to home page.  This should not happen in the current workflow
+            self.redirect(HOME_PAGE)
+        if error:
+            self.render(EDITPOST_PAGE, blog = updated_blog, error = error, errorType = errorType)
+
 
 app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/blog/?', Home),
                                 ('/newpost/?', NewPost),
                                 ('/blog/([0-9]+)/?', Permalink),
                                 ('/delete/([0-9]+)/?', DeletePost),
+                                ('/edit/([0-9]+)/?', EditPost),
                                 ('/signup/?', Register),
                                 ('/login/?', Login),
                                 ('/welcome/?', Welcome),
