@@ -166,26 +166,25 @@ class NewPost(Handler):
         else:
             # set cookie and store the blog title and blog text in the cookie. 
             # redirect user to home page
-            seld.redirect(HOME_PAGE)
+            self.redirect(HOME_PAGE)
             # How to save user entry - allow them to enter text, then login, then retain the text entered and post it after logging in?
         if error:
             self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType)
 
 class Permalink(Handler):
-    def get(self, post_id):
-        key = db.Key.from_path('Blog',int(post_id))
-        #currentBlog = db.GqlQuery("select * from Blog where __key__ = KEY('%s')" % key).get()
-        currentBlog = db.get(key)
-        if not currentBlog:
-            self.error(404)
-        else:
-            self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user)
+    def get(self, post_id=''):
+        try:
+            currentBlog = Blog.get_by_id(int(post_id))
+            if currentBlog:
+                return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user)
+        except Exception as e:
+            return self.redirect(ERROR_PAGE)
+        return self.redirect(ERROR_PAGE)
 
 class Home(Handler):
     def get(self, post_id=''):
         blogs = db.GqlQuery("select * from Blog order by last_modified desc limit 10")
         self.render(HOME_PAGE, blogs = blogs, user=self.user)
-
 
 class Login(Handler):
     def get(self):
@@ -265,12 +264,23 @@ class Welcome(Handler):
 class Error404(Handler):
     def get(self):
         self.render(ERROR_PAGE, user=self.user)
+
+class DeletePost(Handler):
+    def post(self, post_id=''):
+        key = db.Key.from_path('Blog',int(post_id))
+        if key != None:
+            db.delete(key)
+            self.redirect(self.request.referer)
+        else:
+            self.redirect(ERROR_PAGE)
+
         
 
 app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/blog/?', Home),
                                 ('/newpost/?', NewPost),
                                 ('/blog/([0-9]+)/?', Permalink),
+                                ('/delete/([0-9]+)/?', DeletePost),
                                 ('/signup/?', Register),
                                 ('/login/?', Login),
                                 ('/welcome/?', Welcome),
