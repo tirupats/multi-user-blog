@@ -254,16 +254,19 @@ class Error404(Handler):
         self.render(ERROR_PAGE, user=self.user)
 
 class DeletePost(Handler):
-    def get(self, *args, **kwargs):
+    def get(self, post_id=''):
         if self.user:
-            self.render(ERROR_PAGE)
-            self.write("Delete method cannot be accessed using an ID.  Please use GUI options to delete.")
+            key = db.Key.from_path('Blog',int(post_id))
+            blog = Blog.get_by_id(int(post_id))
+            if blog and key != None:
+                db.delete(key)
+                self.redirect(self.request.referer)
+            else:
+                return self.redirect(ERROR_PAGE)
         else:
             generalError = True
             generalErrorMsg = "You must be logged in to delete a blog!  Please login to continue."
             self.render(LOGIN_PAGE, generalError = generalError, generalErrorMsg = generalErrorMsg )
-
-
 
     def post(self, post_id=''):
         key = db.Key.from_path('Blog',int(post_id))
