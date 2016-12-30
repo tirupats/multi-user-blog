@@ -11,8 +11,8 @@
                     </div> 
                         {% if user.name == blog.author: %}
                         <div class="col-xs-2 __edit-delete-buttons">
-                        <a class="btn btn-info pull-right" href="/edit/{{ blog.key().id() }}"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
                         <a class="btn btn-danger pull-right" href="/delete/{{ blog.key().id() }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
+                        <a class="btn btn-info pull-right" href="/edit/{{ blog.key().id() }}"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
                         </div>
                         {% endif %}
                       
@@ -28,12 +28,12 @@
                 <div class="col-xs-12">
                     <article>
                         {{ blog.blogText[:250] | safe }}
-                        {% if blog.blogText|length > 150: %}
-                            <a href="/blog/{{ blog.key().id() }}/">
-                                <p class="pull-right"><button class="btn btn-primary ">Read more... 
-                                </button></p>    
-                            </a>
-                        {% endif %}
+                        <a href="/blog/{{ blog.key().id() }}/">
+                            <p class="pull-right">
+                                <button class="btn btn-primary ">Read more... 
+                                </button>
+                            </p>    
+                        </a>
                     </article>
                 </div>
             </div>

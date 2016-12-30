@@ -5,6 +5,7 @@ from google.appengine.ext import db
 import collections
 import hashlib
 import hmac
+import urllib2
 from datetime import date
 
 from models.VARS import *
@@ -51,7 +52,7 @@ class Handler(webapp2.RequestHandler):
         cookie_val = make_secure_val(val)
         self.response.headers.add_header(
             'Set-Cookie',
-            '%s=%s; Path=/;' % (name, cookie_val))
+            '%s=%s; Path=/; expires=0;' % (name, cookie_val))
 
     def read_secure_cookie(self, name):
         cookie_val = self.request.cookies.get(name)
@@ -61,7 +62,7 @@ class Handler(webapp2.RequestHandler):
         self.set_secure_cookie('user_id', str(user.key().id()))
 
     def logout(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/; expires=;')
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/; expires=; expiration=;')
     
     def makeImagesResponsive(self, blogText):
         # If the user posts images in the blog, make the images responsive.
@@ -74,7 +75,7 @@ class Handler(webapp2.RequestHandler):
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.by_id(int(uid))
 
-# user database model
+# user model
 
 class User(db.Model):
     name = db.StringProperty(required = True)
@@ -105,7 +106,7 @@ class User(db.Model):
             return u
 
 
-# blog database model
+# blog model
 class Blog(db.Model):
     title = db.StringProperty(required = True)
     blogText = db.TextProperty(required = True)
@@ -117,6 +118,35 @@ class Blog(db.Model):
         self._render_text = self.content.replace('<img', '<img class="img-responsive" ')
         return render_str(HOME_PAGE, p=self)
 
+# Comments model
+class Comment(db.Model):
+    blogId = db.StringProperty(required = True) # foreign key from Blog class
+    author = db.StringProperty(required = True) # foreign key from User class
+    commentText = db.StringProperty(required = True)
+    created = db.DateProperty(auto_now_add = True)
+
+class Likes(db.Model):
+    blogId = db.StringProperty(required = True) # foreign key from Blog class
+    likeAuthor = db.StringProperty(required = True) # foreign key from User class
+
+# Comments and likes methods
+class AddComment(Handler):
+    def post(self, post_id = ''):
+        blogId = post_id
+        author = self.user.name
+        commentText = self.request.get("commentText")
+        if self.user:
+            a = Comment(blogId = blogId, author = author, commentText = commentText)
+            a.put()
+        return self.redirect("/blog/%s" % str(post_id))
+
+
+
+# class AddRemoveLikes(Handler):
+#     def post(self, post_id = ''):
+#         self.render("welcome.html")
+
+# Blog methods
 class NewPost(Handler):
 # This class defines logic associated with processing new blog posts.
     def get(self):
@@ -157,90 +187,25 @@ class NewPost(Handler):
             # redirect user to home page
             self.redirect(HOME_PAGE)
         if error:
-            self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType, referer = self.request.referer)
+            self.redirect(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType, 
+                referer = self.request.referer)
 
 class Permalink(Handler):
     def get(self, post_id=''):
         try:
             currentBlog = Blog.get_by_id(int(post_id))
+            comments = Comment.all().filter('blogId = ', post_id).order('-created')
             if currentBlog:
-                return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user)
+                return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments)
         except Exception as e:
-            return self.redirect(ERROR_PAGE)
-        return self.redirect(ERROR_PAGE)
+            #return self.redirect(ERROR_PAGE)
+            self.render("welcome.html", user = self.user)
+            self.write(e.message)
 
 class Home(Handler):
     def get(self, post_id=''):
         blogs = db.GqlQuery("select * from Blog order by last_modified desc limit 10")
         self.render(HOME_PAGE, blogs = blogs, user=self.user)
-
-class Login(Handler):
-    def get(self):
-        if self.user:
-            self.redirect(ERROR_PAGE)
-        else:
-            self.render(LOGIN_PAGE)
-
-    def post(self):
-        username = self.request.get("username")
-        password = self.request.get("password")
-        remember_me = self.request.get("remember-me")
-        generalError = False
-        generalErrorMsg = ""
-        u = User.login(username, password)
-        if u:
-            # Display user dashboard
-            self.login(u)
-            self.redirect('/welcome')
-            if remember_me == True:
-                #set cookie to expire 1 year from now. 
-                self.set_secure_cookie('expires', cookie_expires(date.today()))
-        else:
-            generalError = True
-            generalErrorMsg = "Invalid username or password.  Please try again"
-            self.render(LOGIN_PAGE, username = username, generalError = generalError, generalErrorMsg = generalErrorMsg)
-
-class Register(Handler):
-    #@check_logged_in
-    def get(self):
-        if not self.user:
-            self.render("register.html")
-
-    def post(self):
-        username = self.request.get("username")
-        password = self.request.get("password")
-        verify = self.request.get("verify")
-        email = self.request.get("email")
-        self.username = username
-        self.password = password
-        self.verify = verify
-        self.email = email
-        errorList = {}
-        errorList = {"username":isValidUsername(username),"password":isBlankPassword(password),"verify": isValidPassword(password, verify), "email":isValidEmail(email)}
-        if False in errorList.values():
-            self.render(REGISTER_PAGE, username=username, email=email, usernameError=errorList['username'], passwordBlank=errorList['password'], passwordError=errorList['verify'], emailError=errorList['email'])
-        else:
-            self.done()
-
-    def done(self):
-        #make sure the user doesnt exist
-            u = User.by_name(self.username)
-            if u:
-                msg = "That user already exists"
-                self.render(REGISTER_PAGE, username=self.username, usernameExists = msg)
-            else:
-                u = User.register(self.username, self.password, self.email)
-                u.put()
-                self.login(u)
-                self.redirect('/welcome')
-
-class Logout(Handler):
-    def get(self):
-        if self.user:
-            self.logout();
-            self.redirect('/')
-        else:
-            self.redirect('/error')
 
 class Welcome(Handler):
     def get(self, *args, **vargs):
@@ -260,7 +225,7 @@ class DeletePost(Handler):
             blog = Blog.get_by_id(int(post_id))
             if blog and key != None:
                 db.delete(key)
-                self.redirect(self.request.referer)
+                self.redirect("/blog")
             else:
                 return self.redirect(ERROR_PAGE)
         else:
@@ -272,7 +237,11 @@ class DeletePost(Handler):
         key = db.Key.from_path('Blog',int(post_id))
         if key != None:
             db.delete(key)
-            self.redirect(self.request.referer)
+            r = requests.head(self.request.referer, allow_redirects=False)
+            if r.status_code != 404 :
+                self.redirect(self.request.referer)
+            else:
+                self.redirect(Home)
         else:
             self.redirect(ERROR_PAGE)
 
@@ -284,7 +253,11 @@ class EditPost(Handler):
         else:
             referer = self.request.referer
         if self.user and self.user.name == self.blog.author:
-            self.render(EDITPOST_PAGE, user = self.user, referer = referer, title = self.blog.title, blogText = self.blog.blogText, blog = self.blog)
+            self.render(EDITPOST_PAGE, user = self.user, 
+                        referer = referer, 
+                        title = self.blog.title, 
+                        blogText = self.blog.blogText, 
+                        blog = self.blog)
         else:
             generalError = True
             generalErrorMsg = "You must be logged in to edit a blog!  Please login to continue."
@@ -317,6 +290,81 @@ class EditPost(Handler):
         if error:
             self.render(EDITPOST_PAGE, blog = updated_blog, error = error, errorType = errorType)
 
+# Security & Permissions
+
+class Register(Handler):
+    #@check_logged_in
+    def get(self):
+        if not self.user:
+            self.render("register.html")
+
+    def post(self):
+        username = self.request.get("username")
+        password = self.request.get("password")
+        verify = self.request.get("verify")
+        email = self.request.get("email")
+        self.username = username
+        self.password = password
+        self.verify = verify
+        self.email = email
+        errorList = {}
+        errorList = {"username":isValidUsername(username),"password":isBlankPassword(password),
+                    "verify": isValidPassword(password, verify), 
+                    "email":isValidEmail(email)}
+        if False in errorList.values():
+            self.render(REGISTER_PAGE, username=username, email=email, 
+                        usernameError=errorList['username'], 
+                        passwordBlank=errorList['password'], 
+                        passwordError=errorList['verify'], 
+                        emailError=errorList['email'])
+        else:
+            self.done()
+
+    def done(self):
+        #make sure the user doesnt exist
+            u = User.by_name(self.username)
+            if u:
+                msg = "That user already exists"
+                self.render(REGISTER_PAGE, username=self.username, usernameExists = msg)
+            else:
+                u = User.register(self.username, self.password, self.email)
+                u.put()
+                self.login(u)
+                self.redirect('/welcome')
+
+class Login(Handler):
+    def get(self):
+        if self.user:
+            self.redirect(ERROR_PAGE)
+        else:
+            self.render(LOGIN_PAGE)
+
+    def post(self):
+        username = self.request.get("username")
+        password = self.request.get("password")
+        remember_me = self.request.get("remember-me")
+        generalError = False
+        generalErrorMsg = ""
+        u = User.login(username, password)
+        if u:
+            # Display user dashboard
+            self.login(u)
+            self.redirect('/welcome')
+            if remember_me == "checked":
+                #set cookie to expire 1 year from now. 
+                self.set_secure_cookie('expires', cookie_expires(date.today()))
+        else:
+            generalError = True
+            generalErrorMsg = "Invalid username or password.  Please try again"
+            self.render(LOGIN_PAGE, username = username, generalError = generalError, generalErrorMsg = generalErrorMsg)
+
+class Logout(Handler):
+    def get(self):
+        if self.user:
+            self.logout();
+            self.redirect('/')
+        else:
+            self.redirect('/error')
 
 app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/blog/?', Home),
@@ -328,6 +376,9 @@ app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/login/?', Login),
                                 ('/welcome/?', Welcome),
                                 ('/logout/?', Logout),
+                                ('/addComment/([0-9]+)/?', AddComment),
+                                ('/editComment/([0-9]+)/?', EditComment),
+                                ('/deleteComment/([0-9]+)/?', DeleteComment),
                                 ('/error/?', Error404),
                                 ('/.*', Error404)],
                                 debug=True)

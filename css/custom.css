@@ -139,3 +139,7 @@ h3 {
   background-color: #e6e6e6;
   border-color: #adadad;
 }
+
+.comment-text {
+    margin-bottom: 5px;
+}
