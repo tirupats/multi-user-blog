@@ -140,7 +140,21 @@ class AddComment(Handler):
             a.put()
         return self.redirect("/blog/%s" % str(post_id))
 
+class EditComment(Handler):
+    def post(self, comment_id):
+        updated_comment = Comment.get_by_id(int(comment_id))
+        blogId = updated_comment.blogId
+        updated_comment.commentText = self.request.get("commentText")
+        updated_comment.put()
+        return self.redirect("/blog/%s" % str(blogId))
 
+
+class DeleteComment(Handler):
+    def get(self, comment_id = ''):
+        c = Comment.get_by_id(int(comment_id))
+        blogId = c.blogId
+        db.delete(c)     
+        return self.redirect("/blog/%s" % str(blogId)) 
 
 # class AddRemoveLikes(Handler):
 #     def post(self, post_id = ''):
