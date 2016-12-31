@@ -125,11 +125,12 @@ class Comment(db.Model):
     commentText = db.StringProperty(required = True)
     created = db.DateProperty(auto_now_add = True)
 
+#Likes model
 class Likes(db.Model):
     blogId = db.StringProperty(required = True) # foreign key from Blog class
-    likeAuthor = db.StringProperty(required = True) # foreign key from User class
+    likedBy = db.StringProperty(required = True) # foreign key from User class
 
-# Comments and likes methods
+# Comments methods
 class AddComment(Handler):
     def post(self, post_id = ''):
         blogId = post_id
@@ -156,9 +157,18 @@ class DeleteComment(Handler):
         db.delete(c)     
         return self.redirect("/blog/%s" % str(blogId)) 
 
-# class AddRemoveLikes(Handler):
-#     def post(self, post_id = ''):
-#         self.render("welcome.html")
+# likeBlog methods
+
+class likeBlog(Handler):
+    def get(self, post_id = ''):
+        like = Likes.all().filter('blogId = ', post_id).filter('likedBy = ', self.user.name)
+        if like.count() > 0:
+            db.delete(like)
+        else:
+            like = Likes(blogId = post_id, likedBy = self.user.name)
+            like.put()
+        return self.redirect("/blog/%s" % str(post_id))
+
 
 # Blog methods
 class NewPost(Handler):
@@ -210,11 +220,17 @@ class Permalink(Handler):
             currentBlog = Blog.get_by_id(int(post_id))
             comments = Comment.all().filter('blogId = ', post_id).order('-created')
             if currentBlog:
-                return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments)
+                if currentBlog.author == self.user.name:
+                    return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = None)
+                else:
+                    liked = Likes.all().filter('blogId = ', post_id).filter('likedBy = ', self.user.name)
+                    if liked.count() > 0:
+                        return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = True)
+                    else:
+                        return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = False)
         except Exception as e:
-            #return self.redirect(ERROR_PAGE)
-            self.render("welcome.html", user = self.user)
-            self.write(e.message)
+            return self.redirect(ERROR_PAGE)
+
 
 class Home(Handler):
     def get(self, post_id=''):
@@ -393,6 +409,7 @@ app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/addComment/([0-9]+)/?', AddComment),
                                 ('/editComment/([0-9]+)/?', EditComment),
                                 ('/deleteComment/([0-9]+)/?', DeleteComment),
+                                ('/like/([0-9]+)/?', likeBlog),
                                 ('/error/?', Error404),
                                 ('/.*', Error404)],
                                 debug=True)

@@ -25,6 +25,13 @@ h3 {
     padding-left: 20px;
 }
 
+.__liked {
+    color: red;
+}
+
+.__not-liked {
+    color: grey;
+}
 .__error {
     color: red;
 }
@@ -101,10 +108,11 @@ h3 {
     margin-bottom: 15px;
 }
 
-.__edit-delete-buttons {
+.__action-buttons {
     padding-left: 0px;
     padding-right: 0px;
     margin-top: 5px !important;
+
 }
 
 /***************************************************/

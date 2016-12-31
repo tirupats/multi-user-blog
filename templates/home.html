@@ -10,7 +10,7 @@
                         <h3> {{ blog.title }}  </h3>
                     </div> 
                         {% if user.name == blog.author: %}
-                        <div class="col-xs-2 __edit-delete-buttons">
+                        <div class="col-xs-2 __action-buttons">
                         <a class="btn btn-danger pull-right" href="/delete/{{ blog.key().id() }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
                         <a class="btn btn-info pull-right" href="/edit/{{ blog.key().id() }}"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
                         </div>
