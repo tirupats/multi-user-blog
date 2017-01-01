@@ -57,7 +57,7 @@
         <div class="clearfix">
             <hr>
             <H4> Leave a Comment: </H4>
-            <form action="/comment/{{ blog.key().id() }}" method = "POST" >
+            <form action="/addComment/{{ blog.key().id() }}" method = "POST" >
                 <div  id="" class="row">
                     <div  class="col-xs-12 text-right">
                         <textarea name="commentText" placeholder="Enter a comment" class="form-control comment-text"  cols="30" rows="2">{{ commentText }}</textarea>
@@ -78,11 +78,10 @@
                                 <h5>{{ comment.author }} : </h5>
                             </div>
                             {% if user.name == comment.author: %}
-                            <form method="POST" action = "/editComment/{{comment.key().id()}}" id="editCommentForm"
+                            <form method="POST" action = "/editComment/{{comment.key().id()}}" id="editCommentForm">
                                 <div class="col-xs-2 pull-right __action-buttons">
-                                        
-
-                                    <a class="btn btn-info" href="#editCommentModal-{{comment.key().id()}}"  data-toggle="modal"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+                                    <a class="btn btn-info" href="#editCommentModal-{{comment.key().id()}}"  data-toggle="modal">
+                                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
                                     <div id="editCommentModal-{{comment.key().id()}}" class="modal fade">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -100,15 +99,10 @@
                                             </div>
                                         </div>
                                     </div>
-
-
                                     <a class="btn btn-danger" href="/deleteComment/{{ comment.key().id() }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
-
-
-
                                 </div>
                             {% endif %}
-                            <p><h6>{{ comment.commentText }}</h6></p>
+                            <div class="col-xs-12"><p><h6>{{ comment.commentText }}</h6></p></div>
                         </div>
                     </div>
                     <hr>

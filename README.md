@@ -4,7 +4,7 @@
 * Open the website, register as a new user, compose new blog, save.
 * Test security features by trying to access links that are not allowed with each permission
 * Test insertion, updation and deletion functionality for new blogs
-* Comments cannot be made in the home page.  Comments can only be added on the individual blog page.  To visit an individual blog page, clike on "Read More..." button associated with a blog.  There, test comment features by adding, editing and deleting comments.  
+* Comments cannot be made in the home page.  Comments can only be added on the individual blog page.  To visit an individual blog page, clike on "Read More..." button associated with a blog.  There, test comment features by adding, editing and deleting comments.  In order to ensure that the comments can be edited, ensure that JavaScript is enabled on the users machine.  Otherwise, editing comments will not be possible as this feature was built using jQuery modals. 
 * Blogs cannot be liked/ unliked from the home page.  Likes can only be added/ deleted on the individual blog page.  A blog can be liked by clicking on the heart icon on the individual blog page.  
 * If a blog is already liked by a user, the heart icon appears in red color.  Click on the heart again to remove the like.  A blog post which has not yet been liked appears in grey color. 
 
@@ -57,6 +57,7 @@
 
 ## Features missing/ Possible additional improvements ##
 
+* Currently, editing comments is implemented using jQuery.  However, if a user does not enable JavaScript on his/her machine, then the user cannot edit his/her comments. 
 * Social media registration and login
 * Parallax effects on views would render it a more modern look
 * Referer pages only keep track of 1 prior page and as a result can lead to circular reference when the "cancel" button is used on some pages
