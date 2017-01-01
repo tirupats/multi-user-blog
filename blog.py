@@ -211,25 +211,30 @@ class NewPost(Handler):
             # redirect user to home page
             self.redirect(HOME_PAGE)
         if error:
-            self.redirect(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType, 
+            self.render(NEWPOST_PAGE, title = title, blogText = blogText,error = error, errorType = errorType, 
                 referer = self.request.referer)
 
 class Permalink(Handler):
     def get(self, post_id=''):
         try:
             currentBlog = Blog.get_by_id(int(post_id))
-            comments = Comment.all().filter('blogId = ', post_id).order('-created')
-            if currentBlog:
-                if currentBlog.author == self.user.name:
-                    return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = None)
-                else:
-                    liked = Likes.all().filter('blogId = ', post_id).filter('likedBy = ', self.user.name)
-                    if liked.count() > 0:
-                        return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = True)
-                    else:
-                        return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = False)
+            qry = "SELECT * FROM Comment WHERE blogId = '%s' ORDER BY created DESC" % (post_id)
+            #comments = Comment.all().filter('blogId = ', post_id).order('-created')
+            comments = db.GqlQuery(qry)
         except Exception as e:
-            return self.redirect(ERROR_PAGE)
+            return self.render(ERROR_PAGE, msg = e.message + "Permalink")
+        if currentBlog:
+            if currentBlog.author == self.user.name:
+                return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = None)
+            else:
+                #liked = Likes.all().filter('blogId = ', post_id).filter('likedBy = ', self.user.name)
+                qry = "SELECT * FROM Likes WHERE blogId = '%s' AND likedBy = '%s'" % (post_id, self.user.name)
+                liked = db.GqlQuery(qry)
+                if liked.count() > 0:
+                    return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = True)
+                else:
+                    return self.render(SINGLEPOST_PAGE, blog = currentBlog, user = self.user, comments = comments, liked = False)
+    
 
 
 class Home(Handler):
@@ -257,7 +262,7 @@ class DeletePost(Handler):
                 db.delete(key)
                 self.redirect("/blog")
             else:
-                return self.redirect(ERROR_PAGE)
+                return self.render(ERROR_PAGE, msg = "Blog not found")
         else:
             generalError = True
             generalErrorMsg = "You must be logged in to delete a blog!  Please login to continue."
@@ -273,7 +278,7 @@ class DeletePost(Handler):
             else:
                 self.redirect(Home)
         else:
-            self.redirect(ERROR_PAGE)
+            self.render(ERROR_PAGE)
 
 class EditPost(Handler):
     def get(self, post_id=''):
@@ -365,7 +370,7 @@ class Register(Handler):
 class Login(Handler):
     def get(self):
         if self.user:
-            self.redirect(ERROR_PAGE)
+            self.render(ERROR_PAGE, msg = "You are already logged in")
         else:
             self.render(LOGIN_PAGE)
 
@@ -394,7 +399,7 @@ class Logout(Handler):
             self.logout();
             self.redirect('/')
         else:
-            self.redirect('/error')
+            self.render(ERROR_PAGE, msg = "You must be logged in to perform that action!")
 
 app = webapp2.WSGIApplication([ ('/', Home),
                                 ('/blog/?', Home),

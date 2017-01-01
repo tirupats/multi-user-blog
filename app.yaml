@@ -10,9 +10,12 @@ handlers:
   static_dir: img
 - url: /js
   static_dir: js
+- url: /fonts
+  static_dir: svg
+- url: /templates
+  static_dir: html
 - url: /.*
   script: blog.app
-
 
 libraries:
 - name: jinja2
