@@ -15,7 +15,7 @@ handlers:
 - url: /templates
   static_dir: html
 - url: /.*
-  script: blog.app
+  script: blog_routes.app
 
 libraries:
 - name: jinja2
