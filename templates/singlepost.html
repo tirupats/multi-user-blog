@@ -1,7 +1,11 @@
 {% extends "BASE_TEMPLATE.html" %}
 
 {% block content %}
-
+    {% if (generalError == True) : %}
+            <div class="alert alert-danger alert-dismissible fade in">
+                  {{ generalErrorMsg }}
+            </div>
+    {% endif %}
     {% if blog: %}
             <div class="clearfix">
                 <div class="col-xs-12 __blog">

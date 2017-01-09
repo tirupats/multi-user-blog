@@ -1,5 +1,16 @@
 # Multi User Blog Project
 
+## How to run the Project
+* On the web, go to link: https://multi-user-blog-st-154308.appspot.com/
+* On the local machine, download all the files into a folder called blog.
+* Then using command prompt (windows) or terminal (mac), navigate into the
+* "blog" folder and run the following command
+* dev_appserver.py .
+* This will start a google app engine dev server in the current folder (blog)
+* You will see the following on the screen:
+* Starting module "default" running at: http://localhost:8080
+* Open browser and navigate to the module hyperlink in the above step
+
 ## How to use/ General Advise ##
 * Open the website, register as a new user, compose new blog, save.
 * Test security features by trying to access links that are not allowed with each permission

@@ -1,7 +1,20 @@
 import hmac
-from models.VARS import secret
+from functools import wraps
+from models.VARS import secret, LOGIN_PAGE
+
 
 # global functions
+
+# def login_required(user):
+#     def login_decorator(f):
+#         @wraps(f)
+#         def wrap(*args, **kwargs): 
+#             if user:
+#                 return f(*args, **kwargs)
+#             else:
+#                 return redirect(LOGIN_PAGE)
+#         return wrap
+#     return login_decorator
 
 def render_str(template, **params):
     t = jinja_env.get_template(template)
@@ -18,9 +31,10 @@ def check_secure_val(secure_val):
 def cookie_expires(d):
     ''' 
     cookie_expires(): 
-        This function sets the cookie to expire in one year if the user uses the
-        'remember me' option on the login screen.  Otherwise, cookie will expire at the end of the
-        session caused by logout action or browser close action. 
+        This function sets the cookie to expire in one year if the user uses 
+        the 'remember me' option on the login screen.  Otherwise, cookie 
+        will expire at the end of the session caused by logout action or 
+        browser close action. 
     Arg1 (date): 
         The function adds one year to the date passed
     Returns:

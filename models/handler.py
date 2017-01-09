@@ -3,13 +3,14 @@ import webapp2
 import jinja2
 
 from models.utils import check_secure_val
-from models.user import User
 from models.utils import make_secure_val
+from models.user import User
 
 
-
-template_dir = os.path.join(os.path.join(os.path.dirname(__file__), os.pardir), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
+template_dir = os.path.join(os.path.join(os.path.dirname(__file__), 
+os.pardir), 'templates')
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
+autoescape=True)
 
 # Blog handler
 class Handler(webapp2.RequestHandler):
@@ -42,7 +43,8 @@ class Handler(webapp2.RequestHandler):
         self.set_secure_cookie('user_id', str(user.key().id()))
 
     def logout(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/; expires=; expiration=;')
+        self.response.headers.add_header(
+            'Set-Cookie', 'user_id=; Path=/; expires=; expiration=;')
     
     def makeImagesResponsive(self, blogText):
         # If the user posts images in the blog, make the images responsive.
@@ -51,6 +53,7 @@ class Handler(webapp2.RequestHandler):
     #Initialize gets called every time by default
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
-        self.response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, pre-check=0, post-check=0"
+        self.response.headers["Cache-Control"] = \
+        "no-cache, no-store, must-revalidate, pre-check=0, post-check=0"
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.by_id(int(uid))

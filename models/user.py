@@ -2,7 +2,11 @@
 from google.appengine.ext import db
 from models.errorHandlers import valid_pw, make_pw_hash
 #from models.handler import Handler
+
 class User(db.Model):
+    '''
+    User:  This class defines the database model for the user table
+    '''
     name = db.StringProperty(required = True)
     pw_hash = db.StringProperty(required = True)
     email = db.StringProperty()
